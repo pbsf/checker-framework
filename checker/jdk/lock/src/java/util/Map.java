@@ -6,7 +6,7 @@ import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.lock.qual.*;
 
 // Subclasses of this interface/class may opt to prohibit null elements
-public interface Map<K extends Object, V extends Object> {
+public interface Map<K extends @GuardedByInaccessible Object, V extends @GuardedByInaccessible Object> {
   public static interface Entry<K extends Object, V extends Object> {
      public abstract K getKey(@GuardSatisfied Entry<K,V> this);
      public abstract V getValue(@GuardSatisfied Entry<K,V> this);

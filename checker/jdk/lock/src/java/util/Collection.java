@@ -6,7 +6,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import java.util.stream.Stream;
 
 // Subclasses of this interface/class may opt to prohibit null elements
-public interface Collection<E extends Object> extends Iterable<E> {
+public interface Collection<E extends @GuardedByInaccessible Object> extends Iterable<E> {
    int size(@GuardSatisfied Collection<E> this);
    boolean isEmpty(@GuardSatisfied Collection<E> this);
   // not true, because map could contain nulls:  AssertParametersNonNull("get(#1)")

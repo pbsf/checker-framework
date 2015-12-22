@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 // Javadoc says: "a comparator may optionally permit comparison of null
 // arguments, while maintaining the requirements for an equivalence relation."
-public interface Comparator<T extends Object> {
+public interface Comparator<T extends @GuardedByInaccessible Object> {
     public abstract int compare(T a1, T a2);
      public abstract boolean equals(@GuardSatisfied Comparator<T> this, @GuardSatisfied Object a1);
 

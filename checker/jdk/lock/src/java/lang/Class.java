@@ -7,7 +7,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
-public final class Class<T> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
+public final class Class<T extends @GuardedByInaccessible Object> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
   private static final long serialVersionUID = 0;
   protected Class() {}
   @Override

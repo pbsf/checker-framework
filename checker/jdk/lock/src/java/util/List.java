@@ -113,7 +113,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
  */
 
 // Subclasses of this interface/class may opt to prohibit null elements
-public interface List<E> extends Collection<E> {
+public interface List<E extends @GuardedByInaccessible Object> extends Collection<E> {
     // Query Operations
 
     /**
