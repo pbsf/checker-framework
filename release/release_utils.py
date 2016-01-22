@@ -26,7 +26,7 @@ import shutil
 import errno
 
 #=========================================================================================
-# Parse Args Utils #TODO: Perhaps use argparse module
+# Parse Args Utils # TODO: Perhaps use argparse module
 def match_arg( arg ):
     matched_project = None
     for project in PROJECTS_TO_SHORTNAMES:
@@ -85,7 +85,7 @@ def print_projects( print_error_label, indent_level, indent_size ):
     indentation = duplicate( duplicate( " ", indent_size ), indent_level )
     project_to_short_cols = 27
 
-    if( print_error_label ):
+    if ( print_error_label ):
         print("projects:   You must specify at least one of the following projects or \"all\"")
 
     print( indentation + pad_to( "project", " ", project_to_short_cols ) + "short-name" )
@@ -108,6 +108,13 @@ def pad_to( original_str, filler, size ):
 def read_auto( argv ):
     for index in range( 1, len( argv ) ):
         if argv[index] == "--auto":
+            return True
+
+    return False
+
+def read_review_manual( argv ):
+    for index in range( 1, len( argv ) ):
+        if argv[index] == "--review-manual":
             return True
 
     return False
@@ -183,8 +190,9 @@ def prompt_until_yes():
         pass
 
 def prompt_w_suggestion(msg, suggestion, validRegex=None):
+    "Only accepts answers that match validRegex."
     answer = None
-    while(answer is None):
+    while (answer is None):
         answer = raw_input(msg + " (%s): " % suggestion)
 
         if answer is None or answer == "":
@@ -227,23 +235,63 @@ def match_one(toTest, patternStrings):
 #=========================================================================================
 # Version Utils
 
+# From http://stackoverflow.com/a/1714190/173852, but doesn't strip trailing zeroes
+def version_number_to_array(versionNum):
+    """Given a version number, return an array of the elements, as integers."""
+    return [int(x) for x in versionNum.split(".")]
+
+def version_array_to_string(versionArray):
+    return ".".join(str(x) for x in versionArray)
+
+# From http://stackoverflow.com/a/1714190/173852
+def compare_version_numbers(version1, version2):
+    return cmp(version_number_to_array(version1), version_number_to_array(version2))
+
 def max_version( strs ):
-    pattern = re.compile(r"""^\d+\.\d+(\.\d+)?(\.\d+)?""")
-    version_as_str = None
-    version_as_int = None
+    """Given a list of version number strings, returns the largest one."""
+    return max(strs, key = version_number_to_array)
 
-    for str in strs:
-        if pattern.match( str ) is not None:
-            if version_as_str == None:
-                version_as_str = str
-                version_as_int = version_to_integer( str )
-            else:
-                cur_version_as_int = version_to_integer( str )
-                if cur_version_as_int > version_as_int:
-                    version_as_str = str
-                    version_as_int = cur_version_as_int
+def test_max_version():
+    assert max_version(["3.1.4", "4.2"]) == '4.2'
+    assert max_version(["3.1.4", "14.2"]) == '14.2'
 
-    return version_as_str
+def increment_version(versionNum, single_digits=False):
+    """
+    Returns the next incremental version after the argument.
+    If single_digits is true, do not permit any part to grow greater than 9.
+    """
+    # Drop the fourth and subsequent parts if present
+    versionArray = version_number_to_array(versionNum)[:3]
+    versionArray[-1] = versionArray[-1] + 1
+    if single_digits and versionArray[-1] > 9:
+        return increment_version(version_array_to_string(versionArray[0:-1]), single_digits) + ".0"
+    return version_array_to_string(versionArray)
+
+def test_increment_version():
+    assert increment_version('1.0.3') == '1.0.4'
+    assert increment_version('1.0.9') == '1.0.10'
+    assert increment_version('1.1.9') == '1.1.10'
+    assert increment_version('1.3.0') == '1.3.1'
+    assert increment_version('1.3.1') == '1.3.2'
+    assert increment_version('1.9.9') == '1.9.10'
+    assert increment_version('3.6.22') == '3.6.23'
+    assert increment_version('3.22.6') == '3.22.7'
+    assert increment_version('1.0.3.1') == '1.0.4'
+    assert increment_version('1.0.9.1') == '1.0.10'
+    assert increment_version('1.1.9.1') == '1.1.10'
+    assert increment_version('1.3.0.1') == '1.3.1'
+    assert increment_version('1.3.1.1') == '1.3.2'
+    assert increment_version('1.9.9.1') == '1.9.10'
+    assert increment_version('3.6.22.1') == '3.6.23'
+    assert increment_version('3.22.6.1') == '3.22.7'
+    assert increment_version('1.0.3', True) == '1.0.4'
+    assert increment_version('1.0.9', True) == '1.1.0'
+    assert increment_version('1.1.9', True) == '1.2.0'
+    assert increment_version('1.3.0', True) == '1.3.1'
+    assert increment_version('1.3.1', True) == '1.3.2'
+    assert increment_version('1.9.9', True) == '2.0.0'
+    assert increment_version('3.6.22', True) == '3.7.0'
+    assert increment_version('3.22.6', True) == '3.22.7'
 
 
 def current_distribution_by_website(site):
@@ -262,7 +310,7 @@ def current_distribution(checker_framework_dir):
     Reads the checker framework version from build-common.properties
     returns the version of the current release
     """
-    ver_re = re.compile( r"""build.version = (\d\.\d\.\d(?:\.\d){0,1})""" )
+    ver_re = re.compile( r"""build.version = (\d+\.\d+\.\d+(?:\.\d+){0,1})""" )
     build_props_location = os.path.join( checker_framework_dir, "build-common.properties" )
     build_props = open( build_props_location )
 
@@ -292,59 +340,6 @@ def latest_openjdk(site):
     result = ver_re.search(text)
     return result.group(1)
 
-def increment_version(version):
-    """
-    Returns a recommendation of the next incremental version based on the
-    passed one.
-
-    >>> increment_version('1.0.3')
-    '1.0.4'
-    >>> increment_version('1.0.9')
-    '1.1.0'
-    >>> increment_version('1.1.9')
-    '1.2.0'
-    >>> increment_version('1.3.1')
-    '1.3.2'
-
-    """
-    parts = [int(x) for x in version.split('.')]
-
-    #We suggest only 3 part versions with the fourth part dropped if present
-    intVer = version_to_integer(version)
-    return integer_to_version(intVer + 10)
-
-def version_to_integer(version):
-    parts = version.split('.')
-    iVer  = int(parts[0]) * 1000
-    iVer += int(parts[1]) * 100
-    if len(parts) > 2:
-        iVer += int(parts[2]) * 10
-    if len(parts) > 3:
-        iVer += int(parts[3])
-    return iVer
-
-def integer_to_version(intVer):
-    parts = [0,0,0]
-    if intVer >= 1000:
-        parts[0] = intVer / 1000
-        intVer = intVer % 1000
-
-    if intVer >= 100:
-        parts[1] = intVer / 100
-        intVer = intVer % 100
-
-    if intVer >= 10:
-        parts[2] = intVer / 10
-        intVer = intVer % 10
-
-    version = ".".join([str(x) for x in parts])
-    if intVer > 0:
-        version = version + "." + str(intVer)
-
-    return version
-
-def is_version_increased(old_version, new_version):
-    return version_to_integer(new_version) > version_to_integer(old_version)
 
 def find_latest_version( version_dir ):
     return max_version( filter( os.path.isdir, os.listdir(version_dir) ) )
@@ -359,16 +354,6 @@ def get_afu_version_from_html( html_file_path ):
 
 #=========================================================================================
 # Mercurial Utils
-
-#ensure that the environment variable "HGUSER" is set
-#if it is not, Mercurial will not allow changes to be committed or pushed
-def check_hg_user():
-    hg_user = os.getenv("HGUSER")
-    if not hg_user: #note this is true if hg_user is NONE or if it is empty
-        raise Exception("Mercurial user name environment variable, HGUSER, must be set!")
-
-    if not prompt_yes_no(("Your Mercurial user name is: %s" % hg_user) + os.linesep + "Is this correct?"):
-        raise Exception("Please set your HGUSER name to the correct value before running the script!")
 
 def is_git( repo_root ):
     return is_git_private(repo_root, True)
@@ -393,6 +378,11 @@ def is_git_bare( repo_root ): # Bare git repos have no .git directory but they h
 def hg_push_or_fail( repo_root ):
     if is_git(repo_root):
         cmd = 'git -C %s push --tags' % repo_root
+        result = os.system(cmd)
+        if result is not 0:
+            raise Exception("Could not push tags to: " + repo_root)
+    if is_git(repo_root):
+        cmd = 'git -C %s push' % repo_root
     else:
         cmd = 'hg -R %s push' % repo_root
     result = os.system(cmd)
@@ -402,10 +392,11 @@ def hg_push_or_fail( repo_root ):
 def hg_push( repo_root ):
     if is_git(repo_root):
         execute('git -C %s push --tags' % repo_root)
+        execute('git -C %s push' % repo_root)
     else:
         execute('hg -R %s push' % repo_root)
 
-#Pull the latest changes and update
+# Pull the latest changes and update
 def update_project(path):
     if is_git_bare(path):
         execute('git -C %s fetch' % path)
@@ -417,12 +408,12 @@ def update_project(path):
 def update_projects(paths):
     for path in paths:
         update_project( path )
-        #print("Checking changes")
+        # print("Checking changes")
         # execute('hg -R %s outgoing' % path)
 
-#Commit the changes we made for this release
-#Then add a tag for this release
-#And push these changes
+# Commit the changes we made for this release
+# Then add a tag for this release
+# And push these changes
 def commit_tag_and_push(version, path, tag_prefix):
     if is_git(path):
         execute('git -C %s commit -a -m "new release %s"' % (path, version))
@@ -543,7 +534,7 @@ def clean_repo(repo, prompt):
         revert(repo)
         strip(repo)
         purge(repo, all)
-        revert(repo) #avoids the issue of purge deleting ignored files we want to get back
+        revert(repo) # avoids the issue of purge deleting ignored files we want to get back
     print ''
 
 def clean_repos(repos, prompt):
@@ -556,7 +547,7 @@ def check_repos(repos, fail_on_error):
     for repo in repos:
         if repo_exists(repo):
             if not is_repo_cleaned_and_updated(repo):
-                if(fail_on_error):
+                if (fail_on_error):
                     raise Exception('repo %s is not cleaned and updated!' % repo)
                 else:
                     if not prompt_yn( '%s is not clean and up to date! Continue?' % repo):
@@ -587,7 +578,7 @@ def get_commit_for_tag( revision, repo_file_path, tag_prefixes ):
     if not is_git(repo_file_path):
         raise Exception("get_commit_for_tag is only defined for git repositories")
 
-    #assume the first is the most recent
+    # assume the first is the most recent
     tags = execute("git -C " + repo_file_path + " rev-list " + tag_prefixes[0] + revision, True, True)
     lines = tags.splitlines()
 
@@ -639,38 +630,33 @@ def write_diff_to_file( old_version, repository, tag_prefixes, dir_path, file ):
          cmd = "hg -R %s diff -w -r%s:%s %s" % (repository, old_tag, tip_tag, dir_path )
     execute_write_to_file( cmd, file )
 
-def propose_changelog_edit( project_name, changelog_file_path, changeset_output_file,
-                            old_version, repository_path, tag_prefixes ):
-    if prompt_yes_no( "Review changelog for %s ?" % project_name, True ):
-        write_changesets_since( old_version, repository_path, tag_prefixes, changeset_output_file )
-        print( "Please review the " + project_name + "changelog and compare it to the list of changesets.  Add any " +
-               "changes you feel are missing.  In the README-maintainers.html there is a section "  +
-               "Changelog Style Guidelines.  Please be sure the changelog meets these guidelines.\n"  +
-               "changelog : "  + changelog_file_path + "\n" +
-               "changesets : " + changeset_output_file + "\n" )
-        prompt_until_yes()
-
 def propose_change_review( dir_title, old_version, repository_path, tag_prefixes,
                               dir_path, diff_output_file ):
     if prompt_yes_no( "Review %s?" %dir_title, True ):
         write_diff_to_file( old_version, repository_path, tag_prefixes, dir_path, diff_output_file )
-        print( "Please review " + dir_title + " and make any edits you deem necessary in:\n" + dir_path )
+        # A side effect here is that the user will see updated version numbers in this diff that won't
+        # be reflected in their local repository.  I think that is OK.  The version numbers will be updated
+        # when the actual release is made anyway.
+        # Alternatively the process could be modified such that the version number updates are not made
+        # before the user sees the diff. However that would mean the user never gets a chance to review
+        # those updates.
+        print( "Please review " + dir_title + " and make any edits you deem necessary in your local clone of the repository." )
         print( "Diff file: " + diff_output_file )
         prompt_until_yes()
 
 #=========================================================================================
 # File Utils
 
-#since download_binary does not seem to work on source files
+# since download_binary does not seem to work on source files
 def wget_file( source_url, destination_dir ):
     print("DEST DIR: " + destination_dir)
     execute( "wget %s" % source_url, True, False, destination_dir )
 
-#Note:  This will download the directory into a directory location as follow:
-#Suppose we have a url:  http://level0/level1/target
-#It will download the files into the following directory
-#destination_dir/level0/level1/target
-#use wget_dir_flat if you'd like all files to be just output to destination_dir
+# Note:  This will download the directory into a directory location as follow:
+# Suppose we have a url:  http://level0/level1/target
+# It will download the files into the following directory
+# destination_dir/level0/level1/target
+# use wget_dir_flat if you'd like all files to be just output to destination_dir
 def wget_dir( source_url, destination_dir ):
     execute( "wget -r -l1 --no-parent %s" % source_url, True, False, destination_dir )
 
@@ -718,7 +704,7 @@ def first_line_containing(value, file):
     p2 = Popen(["sed", "-n", 's/^\\([0-9]*\\)[:].*/\\1/p'], stdin=p1.stdout, stdout=PIPE)
     return int(p2.communicate()[0])
 
-#Give group access to the specified path
+# Give group access to the specified path
 def ensure_group_access(path):
     # Errs for any file not owned by this user.
     # But, the point is to set group writeability of any *new* files.
@@ -752,15 +738,23 @@ def find_first_instance(regex, file, delim=""):
 def delete( file ):
     os.remove(file)
 
+def delete_if_exists( file ):
+    if os.path.exists(file):
+        os.remove(file)
+
 def delete_path( path ):
     shutil.rmtree(path)
+
+def delete_path_if_exists( path ):
+    if os.path.exists(path):
+        shutil.rmtree(path)
 
 def prompt_or_auto_delete( path, auto ):
     if not auto:
         prompt_to_delete(path)
     else:
         print
-        delete_path( path )
+        delete_path_if_exists( path )
 
 def is_yes(prompt_results):
     if prompt_results == "yes" or prompt_results == "Yes":
@@ -787,7 +781,7 @@ def force_symlink( target_of_link, path_to_symlink ):
             os.remove( path_to_symlink )
             os.symlink( target_of_link, path_to_symlink )
 
-#note strs to find is mutated
+# note strs to find is mutated
 def are_in_file( file_path, strs_to_find ):
     file = open( file_path )
 
@@ -821,10 +815,14 @@ def insert_before_line( to_insert, file_path, line ):
 
     output.close()
 
+def create_empty_file( file_path ):
+    dest_file = open(file_path,'wb')
+    dest_file.close()
+
 #=========================================================================================
 # Change Log utils
 
-#Read every line in the file until we reach a line with at least 8 dashes("-") in it
+# Read every line in the file until we reach a line with at least 8 dashes("-") in it
 def changelog_header(filename):
     f = open(filename, 'r')
     header = []
@@ -840,8 +838,8 @@ def get_changelog_date():
     import datetime
     return datetime.datetime.now().strftime("%d %b %Y")
 
-#Ask the user whether they want to edit the changelog
-#Prepend a changelog message to the changelog and then open the passed in editor
+# Ask the user whether they want to edit the changelog
+# Prepend a changelog message to the changelog and then open the passed in editor
 def edit_changelog(projectName, path, version, description, editor):
     edit = raw_input("Edit the %s changelog? [Y/n]" % projectName)
     if not (edit == "n"):
@@ -850,7 +848,7 @@ def edit_changelog(projectName, path, version, description, editor):
             execute([editor, path])
 
 
-#Create a message to add to the current checker framework change log
+# Create a message to add to the current checker framework change log
 def make_checkers_change_desc(version, changes):
     """Version %s, %s
 
@@ -861,7 +859,7 @@ def make_checkers_change_desc(version, changes):
 """  % (version, get_changelog_date(), changes)
 
 
-#Create a message to add to the current JSR308 change log
+# Create a message to add to the current JSR308 change log
 def make_jsr308_change_desc(version, changes, latest_jdk):
     """Version %s, %s
 
@@ -873,17 +871,17 @@ Base build
 ----------------------------------------------------------------------
 """ % (version, get_changelog_date(), latest_jdk, changes)
 
-#Checker Framework Specific Change log method
-#Queries whether or not the user wants to update the checker framework changelog
-#then opens the changelog in the supplied editor
+# Checker Framework Specific Change log method
+# Queries whether or not the user wants to update the checker framework changelog
+# then opens the changelog in the supplied editor
 def edit_checkers_changelog(version, path, editor, changes=""):
     desc = make_checkers_change_desc(version, changes)
     edit_changelog("Checker Framework", path, version, desc, editor)
 
 
-#JSR308 Specific Change log method
-#Queries whether or not the user wants to update the checker framework changelog
-#then opens the changelog in the supplied editor
+# JSR308 Specific Change log method
+# Queries whether or not the user wants to update the checker framework changelog
+# then opens the changelog in the supplied editor
 def edit_langtools_changelog(version, openJdkReleaseSite, path, editor, changes=""):
     latest_jdk = latest_openjdk(openJdkReleaseSite)
     print("Latest OpenJDK release is b%s" % latest_jdk)
@@ -978,15 +976,17 @@ def mvn_sign_and_deploy_all(url, repo_id, pom_file, artifact_jar, source_jar, ja
 #=========================================================================================
 # Misc. Utils
 
-def update_htaccess(releaseDir, cfLtVersion, afuVersion, htAccessTemplate, htAccessToReplace):
-    msg = """Would you like to overwrite %s?""" % htAccessToReplace;
+def update_htaccess( releaseDir, cfLtVersion, afuVersion, htAccessTemplate, htAccessToReplace, auto ):
+    if not auto:
+        msg = """Would you like to overwrite %s?""" % htAccessToReplace;
 
-    if not prompt_yn( msg ):
-        raise Exception( '%s file not written!' % htAccessToReplace )
+        if not prompt_yn( msg ):
+            raise Exception( '%s file not written!' % htAccessToReplace )
 
     cmd = "ant -f release.xml update-htaccess-versions -Dhtaccess.file=%s -Dcflt.version=%s -Dafu.version=%s" % (htAccessTemplate, cfLtVersion, afuVersion)
     execute(cmd, True, False, releaseDir)
-    execute("cp %s %s" % (htAccessTemplate, htAccessToReplace))
+    # Not "cp -p" because that does not work across filesystems whereas rsync does
+    execute("rsync --times %s %s" % (htAccessTemplate, htAccessToReplace))
 
 def print_step( step ):
     print( "\n" )
@@ -1039,16 +1039,25 @@ def get_announcement_email( version ):
     To:  checker-framework-discuss@googlegroups.com
     Subject: Release %s of the Checker Framework
 
-    We have released a new version of the Checker Framework
-    and the Eclipse plugin for the Checker Framework.
+    We have released a new version of the Checker Framework and the Eclipse plugin for the Checker Framework.
 
-    * The Checker Framework lets you create and/or run pluggable type checkers,
-      in order to detect and prevent bugs in your code.
+    * The Checker Framework lets you create and/or run pluggable type checkers, in order to detect and prevent bugs in your code.
     * The Eclipse plugin makes it more convenient to run the Checker Framework.
 
     You can find documentation and download links for these projects at:
     http://CheckerFramework.org/
 
     Changes for the Checker Framework
-    <<Insert latest Checker Framework changelog entry>>
+
+    <<Insert latest Checker Framework changelog entry, omitting the first line with the release version and date, and with hard line breaks removed>>
     """ % ( version )
+
+#=========================================================================================
+# Testing
+
+def test_release_utils():
+    test_max_version()
+    test_increment_version()
+
+# Tests run every time this file is loaded
+test_release_utils()

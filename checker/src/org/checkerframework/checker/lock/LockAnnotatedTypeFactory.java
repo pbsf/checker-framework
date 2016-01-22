@@ -34,7 +34,11 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -87,6 +91,13 @@ public class LockAnnotatedTypeFactory
                 AnnotationUtils.fromClass(elements, SideEffectFree.class));
 
         postInit();
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return Collections.unmodifiableSet(
+                new HashSet<Class<? extends Annotation>>(
+                        Arrays.asList(LockHeld.class, LockPossiblyHeld.class)));
     }
 
     @Override

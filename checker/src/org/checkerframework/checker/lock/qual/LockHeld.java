@@ -5,10 +5,6 @@ import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
-
-import com.sun.source.tree.Tree;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -26,7 +22,6 @@ import java.lang.annotation.Target;
  * @see LockPossiblyHeld
  * @checker_framework.manual #lock-checker Lock Checker
  */
-@TypeQualifier
 @SubtypeOf(LockPossiblyHeld.class) // This is the bottom type in this hierarchy
 @InvisibleQualifier
 @Documented
