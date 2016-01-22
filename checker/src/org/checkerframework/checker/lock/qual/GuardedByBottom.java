@@ -7,7 +7,6 @@ import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 import com.sun.source.tree.Tree;
 
@@ -22,7 +21,6 @@ import com.sun.source.tree.Tree;
  *
  * @checker_framework.manual #lock-checker Lock Checker
  */
-@TypeQualifier
 @InvisibleQualifier
 @SubtypeOf({GuardedBy.class, GuardSatisfied.class})
 @ImplicitFor(trees = {Tree.Kind.NULL_LITERAL})

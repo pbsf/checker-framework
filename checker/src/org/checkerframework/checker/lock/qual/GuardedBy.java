@@ -15,11 +15,10 @@ package org.checkerframework.checker.lock.qual;
 
 import java.lang.annotation.*;
 
-import org.checkerframework.framework.qual.DefaultQualifierForUnannotatedCode;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUncheckedCode;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
 /**
@@ -40,11 +39,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
  * @see Holding
  * @checker_framework.manual #lock-checker Lock Checker
  */
-@TypeQualifier
 @SubtypeOf(GuardedByInaccessible.class)
 @Documented
 @DefaultQualifierInHierarchy
-@DefaultQualifierForUnannotatedCode
+@DefaultQualifierInHierarchyInUncheckedCode
 @ImplicitFor(typeClasses = { AnnotatedPrimitiveType.class })
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE })

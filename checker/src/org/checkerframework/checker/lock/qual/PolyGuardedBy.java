@@ -7,7 +7,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.checkerframework.framework.qual.PolymorphicQualifier;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * A polymorphic qualifier for the GuardedBy type system.
@@ -27,7 +26,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * @see GuardedBy
  * @checker_framework.manual #lock-checker Lock Checker
  */
-@TypeQualifier
 @PolymorphicQualifier(GuardedByInaccessible.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

@@ -3,7 +3,6 @@ package org.checkerframework.checker.lock.qual;
 import java.lang.annotation.*;
 
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  *
@@ -31,7 +30,6 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * @see Holding
  * @checker_framework.manual #lock-checker Lock Checker
  */
-@TypeQualifier
 @SubtypeOf(GuardedByInaccessible.class) // TODO: Should @GuardSatisfied be in its own hierarchy?
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

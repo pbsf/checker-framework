@@ -34,6 +34,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -336,7 +337,7 @@ public class LockAnnotatedTypeFactory
             int count = sideEffectAnnotationPresent.size();
 
             if (count == 0) {
-                return defaults.applyUnannotatedDefaults(element) ?
+                return defaults.applyUncheckedCodeDefaults(element) ?
                     SideEffectAnnotation.MAYRELEASELOCKS :
                     SideEffectAnnotation.RELEASESNOLOCKS;
             }
