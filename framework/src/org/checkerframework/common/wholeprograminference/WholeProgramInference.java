@@ -93,5 +93,5 @@ public interface WholeProgramInference {
      * Saves the inferred results. Ideally should be called at the end of the
      * type-checking process.
      */
-    public void saveResults();
+     void saveResults();
 }
