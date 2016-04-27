@@ -282,13 +282,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Indicates that the whole-program inference is on.
      */
-    private final boolean inferSignatures;
-
-    /**
-     * Array of options that cannot be passed together with "inferSignatures".
-     */
-    private final String[] invalidWholeProgramInferenceOptions =
-            new String[]{"useDefaultsForUncheckedCode"};
+    private final boolean infer;
 
     /**
      * Should results be cached?
@@ -363,8 +357,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.typeFormatter = createAnnotatedTypeFormatter();
         this.annotationFormatter = createAnnotationFormatter();
 
-        inferSignatures = checker.hasOption("inferSignatures");
-        if (inferSignatures) {
+        infer = checker.hasOption("infer");
+        if (infer) {
             checkInvalidOptionsInferSignatures();
             wholeProgramInference = new WholeProgramInferenceScenes(
                     !"NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName()));
@@ -373,18 +367,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
 
     /**
-     * This method is called only when -AinferSignatures is passed as an option.
+     * This method is called only when -Ainfer is passed as an option.
      * It checks if another option that should not occur simultaneously with
      * the whole-program inference is also passed as argument, and
      * aborts the process if that is the case. For example, the whole-program
-     * inference process was not designed to work with safe defaults.
+     * inference process was not designed to work with unchecked code defaults.
+     * (Subclasses may override this method to add more options.)
      */
-    private void checkInvalidOptionsInferSignatures() {
-        for (String option : invalidWholeProgramInferenceOptions) {
-            if (checker.hasOption(option)) {
-                ErrorReporter.errorAbort("The option -AinferSignatures cannot be" +
-                        " used together with the option -A" + option + ".");
-            }
+    protected void checkInvalidOptionsInferSignatures() {
+        // See Issue 683
+        // https://github.com/typetools/checker-framework/issues/683
+        if (checker.useUncheckedCodeDefault("source") || checker.useUncheckedCodeDefault("bytecode")) {
+            ErrorReporter.errorAbort("The option -Ainfer cannot be" +
+                                     " used together with unchecked code defaults.");
         }
      }
 
@@ -952,7 +947,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected void postProcessClassTree(ClassTree tree) {
         TypesIntoElements.store(processingEnv, this, tree);
         DeclarationsIntoElements.store(processingEnv, this, tree);
-        if (checker.getOptions().containsKey("inferSignatures") && wholeProgramInference != null) {
+        if (checker.getOptions().containsKey("infer") && wholeProgramInference != null) {
             // Write scenes into .jaif files. In order to perform the write
             // operation only once for each .jaif file, the best location to
             // do so is here.

@@ -21,7 +21,7 @@ public class WholeProgramInferenceTest extends CheckerFrameworkTest {
 
     public WholeProgramInferenceTest(File testFile) {
         super(testFile, tests.wholeprograminference.WholeProgramInferenceTestChecker.class,
-              "value", "-Anomsgtext", "-AinferSignatures");
+              "value", "-Anomsgtext", "-Ainfer");
     }
 
     @Parameters

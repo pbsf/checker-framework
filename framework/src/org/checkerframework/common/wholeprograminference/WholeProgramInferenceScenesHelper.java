@@ -510,6 +510,29 @@ public class WholeProgramInferenceScenesHelper {
                     typeToUpdate.tlAnnotationsHere.add(anno);
                 }
             }
+        } else if (curATM.getKind() == TypeKind.TYPEVAR) {
+            // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly annotated.
+            // So instead, only insert the annotation if there is not primary annotation of the same hierarchy.
+            // #shouldIgnore prevent annotations that are subtypes of type vars upper bound from being inserted.
+            for (AnnotationMirror am : newATM.getAnnotations()) {
+                if (curATM.getAnnotationInHierarchy(am) != null) {
+                    // Don't insert if the type is already has a primary annotation
+                    // in the same hierarchy.
+                    break;
+                }
+                Annotation anno = AnnotationConverter.annotationMirrorToAnnotation(am);
+                if (anno != null) {
+                    if (shouldIgnore(am, defLoc, atf, newATM)) {
+                        Set<String> annosIgnored = annosToIgnore.get(defLoc);
+                        if (annosIgnored == null) {
+                            annosIgnored = new HashSet<>();
+                            annosToIgnore.put(defLoc, annosIgnored);
+                        }
+                        annosIgnored.add(anno.def().name);
+                    }
+                    typeToUpdate.tlAnnotationsHere.add(anno);
+                }
+            }
         }
 
         // Recursively update compound type and type variable type if they exist.
@@ -521,12 +544,6 @@ public class WholeProgramInferenceScenesHelper {
                     atf, typeToUpdate.innerTypes.vivify(new InnerTypeLocation(
                             TypeAnnotationPosition.getTypePathFromBinary(
                                     Collections.nCopies(2 * idx, 0)))), idx+1, defLoc);
-        } else if (newATM.getKind() == TypeKind.TYPEVAR &&
-                curATM.getKind() == TypeKind.TYPEVAR) {
-            AnnotatedTypeVariable newATV = (AnnotatedTypeVariable) newATM;
-            AnnotatedTypeVariable oldATV = (AnnotatedTypeVariable) curATM;
-            updateTypeElementFromATM(newATV.getUpperBound(), oldATV.getUpperBound(),
-                    atf, typeToUpdate, idx, defLoc);
         }
     }
 }
