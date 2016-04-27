@@ -521,12 +521,6 @@ public class WholeProgramInferenceScenesHelper {
                     atf, typeToUpdate.innerTypes.vivify(new InnerTypeLocation(
                             TypeAnnotationPosition.getTypePathFromBinary(
                                     Collections.nCopies(2 * idx, 0)))), idx+1, defLoc);
-        } else if (newATM.getKind() == TypeKind.TYPEVAR &&
-                curATM.getKind() == TypeKind.TYPEVAR) {
-            AnnotatedTypeVariable newATV = (AnnotatedTypeVariable) newATM;
-            AnnotatedTypeVariable oldATV = (AnnotatedTypeVariable) curATM;
-            updateTypeElementFromATM(newATV.getUpperBound(), oldATV.getUpperBound(),
-                    atf, typeToUpdate, idx, defLoc);
         }
     }
 }
