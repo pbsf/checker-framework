@@ -103,6 +103,7 @@ infer_and_annotate() {
         # Updates $PREV_ITERATION_DIR folder
         rm -rf $PREV_ITERATION_DIR
         mv $WHOLE_PROGRAM_INFERENCE_DIR $PREV_ITERATION_DIR
+        mkdir -p $WHOLE_PROGRAM_INFERENCE_DIR
 
         # Runs CF's javac
         command="${CHECKERFRAMEWORK}/checker/bin/javac -d $TEMP_DIR/ -cp $cp -processor $processor -AinferSignatures -Awarns -Xmaxwarns 10000 $extra_args $java_files"
