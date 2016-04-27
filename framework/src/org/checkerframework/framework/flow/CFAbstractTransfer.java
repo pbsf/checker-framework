@@ -116,12 +116,12 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     /**
      * Indicates that the whole-program inference is on.
      */
-    private final boolean inferSignatures;
+    private final boolean infer;
 
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
-        this.inferSignatures = analysis.checker.hasOption("inferSignatures");
+        this.infer = analysis.checker.hasOption("infer");
     }
 
     /**
@@ -875,7 +875,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
      */
     private boolean shouldPerformWholeProgramInference(Tree tree,
                                                        Element elt) {
-        boolean returnB = inferSignatures;
+        boolean returnB = infer;
         if (tree != null) {
             returnB = returnB && !analysis.checker.shouldSuppressWarnings(tree, null);
         }

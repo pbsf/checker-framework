@@ -107,7 +107,7 @@ Section~\ref{type-refinement-purity}.
 
 \subsubsection{Type inference for any type system\label{type-inference-tools-general}}
 
-By supplying the \<-AinferSignatures> command-line option,
+By supplying the \<-Ainfer> command-line option,
 any type-checker can infer annotations. See Section~\ref{whole-program-inference}.
 
 \href{https://github.com/reprogrammer/cascade/}{Cascade}~\cite{VakilianPEJ2014}
@@ -261,7 +261,7 @@ merely want to run the script and you are not encountering trouble, you can
 skip this section.
 
 If you
-supply to javac the command-line option \code{-AinferSignatures}, then the
+supply to javac the command-line option \code{-Ainfer}, then the
 checker outputs \<.jaif> files with refined types for fields and method signatures.
 The output .jaif files are located in the folder \code{build/whole-program-inference},
 relative to where you executed the javac command.
@@ -273,7 +273,7 @@ run type-checking, there are likely to be fewer type-checking warnings.
 
 Note that a three-step process is required:
 \begin{enumerate}
-\item Run the checker with the \<-AinferSignatures> command-line option to
+\item Run the checker with the \<-Ainfer> command-line option to
   produce a \<.jaif> file.  Some type-checking errors may result.
 \item Insert the \<.jaif> file's annotations in the program.
 \item Run the checker again.  Fewer type-checking errors may result.
@@ -303,5 +303,5 @@ it makes type-checking fast.  However, it has some disadvantages:
 
 
 
-%%  LocalWords:  AinferSignatures java jaif plugin classpath m2 m1 multi
+%%  LocalWords:  Ainfer java jaif plugin classpath m2 m1 multi
 %%  LocalWords:  AsuggestPureMethods CHECKERFRAMEWORK

@@ -35,7 +35,7 @@
 set -e
 
 # Path to directory that will contain .jaif files after running the CF
-# with -AinferSignatures
+# with -Ainfer
 WHOLE_PROGRAM_INFERENCE_DIR=build/whole-program-inference
 
 # Path that will contain .class files after running CF's javac. This dir will
@@ -106,7 +106,7 @@ infer_and_annotate() {
         mkdir -p $WHOLE_PROGRAM_INFERENCE_DIR
 
         # Runs CF's javac
-        command="${CHECKERFRAMEWORK}/checker/bin/javac -d $TEMP_DIR/ -cp $cp -processor $processor -AinferSignatures -Awarns -Xmaxwarns 10000 $extra_args $java_files"
+        command="${CHECKERFRAMEWORK}/checker/bin/javac -d $TEMP_DIR/ -cp $cp -processor $processor -Ainfer -Awarns -Xmaxwarns 10000 $extra_args $java_files"
         if [ $debug ]; then
             echo ${command}
             echo "Press any key to run command... "
