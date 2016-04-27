@@ -285,12 +285,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final boolean infer;
 
     /**
-     * Array of options that cannot be passed together with "infer".
-     */
-    private final String[] invalidWholeProgramInferenceOptions =
-            new String[]{"useDefaultsForUncheckedCode"};
-
-    /**
      * Should results be cached?
      * This means that ATM.deepCopy() will be called.
      * ATM.deepCopy() used to (and perhaps still does) side effect the ATM being copied.
@@ -377,14 +371,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * It checks if another option that should not occur simultaneously with
      * the whole-program inference is also passed as argument, and
      * aborts the process if that is the case. For example, the whole-program
-     * inference process was not designed to work with safe defaults.
+     * inference process was not designed to work with unchecked code defaults.
+     * (Subclasses may override this method to add more options.)
      */
-    private void checkInvalidOptionsInferSignatures() {
-        for (String option : invalidWholeProgramInferenceOptions) {
-            if (checker.hasOption(option)) {
-                ErrorReporter.errorAbort("The option -Ainfer cannot be" +
-                        " used together with the option -A" + option + ".");
-            }
+    protected void checkInvalidOptionsInferSignatures() {
+        if (checker.useUncheckedCodeDefault("source") || checker.useUncheckedCodeDefault("bytecode")) {
+            ErrorReporter.errorAbort("The option -Ainfer cannot be" +
+                                     " used together with unchecked code defaults.");
         }
      }
 
