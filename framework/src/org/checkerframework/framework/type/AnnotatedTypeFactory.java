@@ -375,6 +375,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * (Subclasses may override this method to add more options.)
      */
     protected void checkInvalidOptionsInferSignatures() {
+        // See Issue 683
+        // https://github.com/typetools/checker-framework/issues/683
         if (checker.useUncheckedCodeDefault("source") || checker.useUncheckedCodeDefault("bytecode")) {
             ErrorReporter.errorAbort("The option -Ainfer cannot be" +
                                      " used together with unchecked code defaults.");
