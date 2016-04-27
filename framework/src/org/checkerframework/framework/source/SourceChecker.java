@@ -194,8 +194,6 @@ import com.sun.tools.javac.util.Log;
 
     // Whether to use .jaif files whole-program inference
     "inferSignatures",
-    // Path to .jaif files (optional)
-    "inferSignaturesJaifPath",
 
     ///
     /// Stub libraries
